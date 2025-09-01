@@ -16,8 +16,11 @@ export const metadata: Metadata = {
   title: "Pagamenti FelizViaje",
   description: "Accetta pagamenti online con carta, Klarna e abbonamenti.",
   icons: {
-    icon: "/cropped-favicon-felizviaje.png",
-    shortcut: "/cropped-favicon-felizviaje.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/cropped-favicon-felizviaje.png", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
     apple: "/cropped-favicon-felizviaje.png",
   },
   openGraph: {
