@@ -15,6 +15,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Pagamenti FelizViaje",
   description: "Accetta pagamenti online con carta, Klarna e abbonamenti.",
+  icons: {
+    icon: "/cropped-favicon-felizviaje.png",
+    shortcut: "/cropped-favicon-felizviaje.png",
+    apple: "/cropped-favicon-felizviaje.png",
+  },
   openGraph: {
     title: "Pagamenti FelizViaje",
     description: "Accetta pagamenti online con carta, Klarna e abbonamenti.",
