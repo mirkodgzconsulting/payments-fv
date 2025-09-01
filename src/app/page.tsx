@@ -1,95 +1,114 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import Image from "next/image";
-import styles from "./page.module.css";
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
+  const [submitting, setSubmitting] = useState<null | "now" | "installments" | "subscribe">(null);
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+  const valid = useMemo(() => {
+    const n = parseFloat(amount);
+    return description.trim().length > 0 && Number.isFinite(n) && n > 0;
+  }, [description, amount]);
+
+  async function startCheckout(mode: "now" | "installments" | "subscribe") {
+    if (!valid) return;
+    try {
+      setSubmitting(mode);
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description, amount, mode }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Errore creazione sessione");
+      if (data?.url) {
+        window.location.href = data.url as string;
+      }
+    } catch (e) {
+      alert("Errore nell'avvio del pagamento. Riprova.");
+      console.error(e);
+    } finally {
+      setSubmitting(null);
+    }
+  }
+
+  return (
+    <div className="container">
+      <div className="card">
+        <div className="logo">
+          <Image
+            src="/logo-felizviaje-def-blue.png"
+            alt="FelizViaje"
+            width={200}
+            height={60}
+            priority
+          />
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+        
+        <h1 className="title">Pagamenti FelizViaje</h1>
+        <p className="subtitle">
+          Inserisci i dettagli del pagamento e scegli un&apos;opzione
+        </p>
+
+        <div className="form-group">
+          <label htmlFor="description" className="label">
+            Descrizione pagamento
+          </label>
+          <input
+            id="description"
+            type="text"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Es. Acconto viaggio Roma"
+            className="input"
           />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="amount" className="label">
+            Importo (EUR)
+          </label>
+          <input
+            id="amount"
+            type="number"
+            step="0.01"
+            min="0"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="Es. 299.00"
+            className="input"
           />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        </div>
+
+        <div className="button-group">
+          <button
+            onClick={() => startCheckout("now")}
+            disabled={!valid || submitting !== null}
+            className={`button button-primary ${submitting === "now" ? "loading" : ""}`}
+          >
+            {submitting === "now" ? "Reindirizzamento..." : "Ora"}
+          </button>
+          
+          <button
+            onClick={() => startCheckout("installments")}
+            disabled={!valid || submitting !== null}
+            className={`button button-secondary ${submitting === "installments" ? "loading" : ""}`}
+          >
+            {submitting === "installments" ? "Reindirizzamento..." : "A rate"}
+          </button>
+          
+          <button
+            onClick={() => startCheckout("subscribe")}
+            disabled={!valid || submitting !== null}
+            className={`button button-success ${submitting === "subscribe" ? "loading" : ""}`}
+          >
+            {submitting === "subscribe" ? "Reindirizzamento..." : "Abbonati"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
